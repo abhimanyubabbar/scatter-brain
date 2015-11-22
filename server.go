@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+
+	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -12,9 +14,10 @@ func main() {
 		port = "8080"
 	}
 
-	http.HandleFunc("/api/ping", pingHandler)
-	http.Handle("/", http.FileServer(http.Dir("public")))
-	http.ListenAndServe(":"+port, nil)
+	r := new(mux.Router)
+	r.HandleFunc("/api/ping", pingHandler)
+	r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("public/"))))
+	http.ListenAndServe(":"+port, r)
 }
 
 type Status struct {
