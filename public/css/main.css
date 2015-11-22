@@ -1,0 +1,14 @@
+/** Main CSS File.  **/
+
+body {
+    font-size:1.8em
+}
+
+#header-frame .heading {
+    font-family: 'Lobster',cursive;
+    text-align: center
+}
+
+#form-frame {
+    margin-top: 50px
+}
