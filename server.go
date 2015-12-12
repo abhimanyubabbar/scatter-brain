@@ -28,6 +28,7 @@ func main() {
 	r := new(mux.Router)
 	r.HandleFunc("/api/ping", pingHandler)
 	r.HandleFunc("/api/thoughts", thoughtsPostHandler).Methods("POST")
+	r.HandleFunc("/api/thoughts", getAllThoughts).Methods("GET")
 	r.HandleFunc("/api/thoughts/{id}", thoughtsGetHandler).Methods("GET")
 
 	r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("public/"))))
@@ -47,12 +48,28 @@ func pingHandler(rw http.ResponseWriter, r *http.Request) {
 	rw.Write(resp)
 }
 
+func getAllThoughts(rw http.ResponseWriter, r *http.Request) {
+
+	thoughts := make([]Thoughts, 0)
+	for key := range thoughtMap {
+		thoughts = append(thoughts, thoughtMap[key])
+	}
+
+	resp, err := json.Marshal(thoughts)
+	if err != nil {
+		httpError(rw, http.StatusInternalServerError, err)
+	}
+
+	rw.Header().Set("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusOK)
+	rw.Write(resp)
+}
+
 // Handles the addition of a new user thought in the system.
 func thoughtsPostHandler(rw http.ResponseWriter, r *http.Request) {
 
 	logrus.Info("Adding a new thought to the system.")
 	decoder := json.NewDecoder(r.Body)
-	logrus.Info(r.Body)
 
 	thoughtsPost := ThoughtsPost{}
 	err := decoder.Decode(&thoughtsPost)

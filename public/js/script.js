@@ -10,7 +10,6 @@ var HeaderFrame= React.createClass({
 });
 
 
-
 // Topic Title Frame.
 var ScatterFrame = React.createClass({
     
@@ -60,9 +59,21 @@ var ScatterFrame = React.createClass({
 
 var AppFrame = React.createClass({
 
+    loadAllThoughts : function(){
+        console.log("Going to get all thoughts");
+        $.ajax ({
+            url : 'http://localhost:8080/api/thoughts',
+            dataType: 'json',
+            success : function(thoughts){
+                console.log(thoughts);
+            },
+            error : function(err){
+                console.log(err);
+            }
+        });
+    },
+
     thoughtSubmit : function (content){
-        console.log("Going to submit the thought.");
-        console.log(content);
 
         $.ajax({
             url : 'http://localhost:8080/api/thoughts',
@@ -78,6 +89,10 @@ var AppFrame = React.createClass({
         });
     },
 
+    componentDidMount : function(){
+        setInterval(this.loadAllThoughts, this.props.pollInterval);
+    },
+
 
     render : function(){
         return (
@@ -91,6 +106,6 @@ var AppFrame = React.createClass({
 
 // Inject the frame in the container.
 ReactDOM.render(
-    <AppFrame />, 
+    <AppFrame pollInterval='5000'/>, 
     document.getElementById('container')
 );
