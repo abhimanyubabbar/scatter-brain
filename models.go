@@ -8,8 +8,8 @@ import (
 
 // Structure during the post.
 type ThoughtsPost struct {
-	Title    string `json:"title"`
-	Thoughts string `json:"thoughts"`
+	Title   string `json:"title"`
+	Thought string `json:"thought"`
 }
 
 // Thoughts : Main structure of the system.

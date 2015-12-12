@@ -52,6 +52,7 @@ func thoughtsPostHandler(rw http.ResponseWriter, r *http.Request) {
 
 	logrus.Info("Adding a new thought to the system.")
 	decoder := json.NewDecoder(r.Body)
+	logrus.Info(r.Body)
 
 	thoughtsPost := ThoughtsPost{}
 	err := decoder.Decode(&thoughtsPost)
@@ -73,7 +74,7 @@ func thoughtsPostHandler(rw http.ResponseWriter, r *http.Request) {
 		ID:          thoughtsID,
 		CreatedTime: time.Now(),
 		Title:       thoughtsPost.Title,
-		Content:     thoughtsPost.Thoughts,
+		Content:     thoughtsPost.Thought,
 	}
 
 	// Store the value in the thoughts map.
