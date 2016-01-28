@@ -22,7 +22,7 @@ func init() {
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "3000"
+		port = "9999"
 	}
 
 	r := new(mux.Router)

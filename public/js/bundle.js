@@ -45,128 +45,237 @@
 /***/ function(module, exports) {
 
 	/** @jsx React.DOM */// Heading Frame.
-	var HeaderFrame= React.createClass({displayName: "HeaderFrame",
-	    render : function(){
-	        return(
-	            React.createElement("div", {id: "header-frame", className: "margin-top:50px"}, 
-	                React.createElement("h2", {className: "heading"}, "Scatter Brain")
-	            )
-	        );
-	    }
+	var HeaderFrame = React.createClass({displayName: "HeaderFrame",
+	  render: function() {
+	    return (
+	      React.createElement("div", {id: "header-frame", className: "margin-top:50px"}, 
+	        React.createElement("h2", {className: "heading"}, "Scatter Brain")
+	      )
+	    );
+	  }
 	});
 
 
-	var ModalFrame = React.createClass({displayName: "ModalFrame",
+	// Main frame for dealing with all the activities related
+	// to the thoughts added by a user.
+	var MainThoughtsFrame = React.createClass({displayName: "MainThoughtsFrame",
 
-	    getInitialState : function(){
-	        return {title: '', thought: ''};
-	    },
-	    submitForm : function(e){
-	        e.preventDefault();
-	        var title = this.state.title.trim();
-	        var thought = this.state.thought.trim();
+	  getInitialState: function(){
+	    return{
+	      thoughts: []
+	    };
+	  },
 
-	        if (!title || !thought) {
-	            return;
+	  componentDidMount: function() {
+	    this.loadAllThoughts();
+	  },
+
+	  replaceThoughtsArray: function(data){
+	    this.setState({
+	      thoughts: data
+	    });
+	  },
+
+	  appendToThoughts: function(thought) {
+
+	    var existingThoughts = this.state.thoughts;
+	    existingThoughts.push(thought);
+	    this.setState({
+	      thoughts: existingThoughts
+	    });
+
+	    console.log(this.state.thoughts);
+	  },
+
+	  loadAllThoughts: function() {
+
+	    var replace = this.replaceThoughtsArray;
+
+	    $.ajax({
+	      url: '/api/thoughts',
+	      dataType: 'json',
+	      success: function(data) {
+
+	        console.log(data);
+	        var thoughts = [];
+	        for (var i=0; i< data.length; i++) {
+	          thoughts.push(data[i]);
 	        }
-	        this.props.onThoughtSubmit({title: title, thought: thought});
-	        this.setState({title:'', thought: ''});
-	    },
-	    titleChange : function(e){
-	        this.setState({title: e.target.value});
-	    },
 
-	    thoughtChange : function(e){
-	        this.setState({thought : e.target.value});
-	    },
+	        replace(data);
+	      },
 
-	    render : function(){
+	      error: function(err) {
+	        console.log(err);
+	      }
+	    });
+	  },
 
-	        return (
-	            React.createElement("div", null, 
-	                React.createElement("button", {className: "btn btn-primary", "data-toggle": "modal", "data-target": "#thoughtModal"}, "New Thought"), 
-	                React.createElement("div", {id: "thoughtModal", className: "modal fade", role: "dialog"}, 
-	                    React.createElement("div", {className: "modal-dialog modal-lg"}, 
-	                        React.createElement("div", {className: "modal-content"}, 
-	                            React.createElement("div", {className: "modal-header"}, 
-	                                React.createElement("h3", null, "New Thought")
-	                            ), 
-	                            React.createElement("div", {className: "modal-body"}, 
-	                                React.createElement("form", {role: "form", id: "scatter-form", onSubmit: this.submitForm}, 
-	                                    React.createElement("div", {className: "form-group"}, 
-	                                        React.createElement("label", {htmlFor: "title"}, "TitleUpdated"), 
-	                                        React.createElement("input", {type: "text", className: "form-control", id: "title", value: this.state.title, onChange: this.titleChange})
-	                                    ), 
-	                                    React.createElement("div", {className: "form-group"}, 
-	                                        React.createElement("label", {htmlFor: "thoughts"}, "Scatter"), 
-	                                        React.createElement("textarea", {className: "form-control", id: "thoughts", value: this.state.thought, onChange: this.thoughtChange})
-	                                    ), 
-	                                    React.createElement("button", {type: "submit", className: "btn btn-primary"}, "Submit")
-	                                )
-	                            ), 
+	  addNewThought: function(content) {
 
-	                            React.createElement("div", {className: "modal-footer"}, 
-	                                React.createElement("button", {className: "btn btn-warning", "data-dismiss": "modal"}, "Close")
-	                            )
-	                        )
-	                    )
-	                )
-	            )
-	        );
+	    var append = this.appendToThoughts;
+
+	    $.ajax({
+	      url: '/api/thoughts',
+	      type: 'POST',
+	      contentType: 'application/json',
+	      data: JSON.stringify(content),
+	      success: function(data) {
+	        console.log("Added a new thought in the system.");
+	        append(data);
+
+	      },
+	      error: function(err) {
+	        console.log(err);
+	      }
+	    });
+	  },
+
+	  render : function(){
+	    return(
+	      React.createElement("div", {id: "main"}, 
+	        React.createElement(ThoughtsViewFrame, {thoughts: this.state.thoughts}), 
+	        React.createElement(NewThoughtsFrame, {addNewThought: this.addNewThought})
+	      )
+	    );
+	  }
+
+	});
+
+
+	// Frame dealing with the display of all the
+	// thoughts in the system.
+	var ThoughtsViewFrame = React.createClass({displayName: "ThoughtsViewFrame",
+
+	  getInitialState: function(){
+	    return{
+	      thoughtDivs: []
+	    };
+	  },
+
+	  render : function(){
+	    var divArray = [];
+	    var thoughts = this.props.thoughts;
+	    console.log(thoughts);
+
+	    for( var i=0; i < thoughts.length ; i++) {
+	      divArray.push(
+	        React.createElement("h3", null, thoughts[i].title)
+	      );
 	    }
+
+	    return(
+	      React.createElement("div", null, 
+	        React.createElement("h3", null, "Thought List"), 
+	        divArray
+	      )
+	    );
+	  }
+	});
+
+	var NewThoughtsFrame = React.createClass({displayName: "NewThoughtsFrame",
+
+	  getInitialState: function() {
+	    return {
+	      title: '',
+	      thought: ''
+	    };
+	  },
+	  submitForm: function(e) {
+
+	    e.preventDefault();
+	    var title = this.state.title.trim();
+	    var thought = this.state.thought.trim();
+
+	    if (!title || !thought) {
+	      return;
+	    }
+
+	    this.props.addNewThought({
+	      title: title,
+	      thought: thought
+	    });
+	    this.setState({
+	      title: '',
+	      thought: ''
+	    });
+	  },
+	  titleChange: function(e) {
+	    this.setState({
+	      title: e.target.value
+	    });
+	  },
+
+	  thoughtChange: function(e) {
+	    this.setState({
+	      thought: e.target.value
+	    });
+	  },
+
+	  render: function() {
+
+	    return (
+	      React.createElement("div", null, 
+	        React.createElement("button", {className: "btn btn-primary", "data-toggle": "modal", "data-target": "#thoughtModal"}, "New Thought"), 
+	        React.createElement("div", {id: "thoughtModal", className: "modal fade", role: "dialog"}, 
+	            React.createElement("div", {className: "modal-dialog modal-lg"}, 
+	                React.createElement("div", {className: "modal-content"}, 
+
+	                  React.createElement("div", {className: "modal-header"}, 
+	                      React.createElement("h3", null, "New Thought")
+	                  ), 
+
+	                  React.createElement("div", {className: "modal-body"}, 
+	                      React.createElement("form", {role: "form", id: "scatter-form", onSubmit: this.submitForm}, 
+	                          React.createElement("div", {className: "form-group"}, 
+	                              React.createElement("label", {htmlFor: "title"}, "Title"), 
+	                              React.createElement("input", {type: "text", className: "form-control", 
+	                                id: "title", value: this.state.title, 
+	                                onChange: this.titleChange}
+	                              )
+	                          ), 
+
+	                          React.createElement("div", {className: "form-group"}, 
+	                              React.createElement("label", {htmlFor: "thoughts"}, "Scatter Thought"), 
+	                              React.createElement("textarea", {className: "form-control", 
+	                                id: "thoughts", value: this.state.thought, 
+	                                onChange: this.thoughtChange}
+	                              )
+	                          )
+
+	                      )
+	                  ), 
+
+	                  React.createElement("div", {className: "modal-footer"}, 
+	                      React.createElement("button", {type: "submit", className: "btn btn-primary", onClick: this.submitForm}, "Submit"), 
+	                      React.createElement("button", {className: "btn btn-warning", "data-dismiss": "modal"}, "Close")
+	                  )
+
+	                ), " "/*modal content end.*/
+	            ), " "/*modal dialog end.*/
+	         ), " "/*modal main end.*/
+
+	      )
+	    );
+	  }
 	});
 
 	var AppFrame = React.createClass({displayName: "AppFrame",
 
-	    loadAllThoughts : function(){
-	        console.log("Going to get all thoughts");
-	        $.ajax ({
-	            url : 'http://localhost:3000/api/thoughts',
-	            dataType: 'json',
-	            success : function(thoughts){
-	                console.log(thoughts);
-	            },
-	            error : function(err){
-	                console.log(err);
-	            }
-	        });
-	    },
-
-	    thoughtSubmit : function (content){
-
-	        $.ajax({
-	            url : 'http://localhost:3000/api/thoughts',
-	            type : 'POST',
-	            contentType : 'application/json',
-	            data : JSON.stringify(content),
-	            success : function(data){
-	               console.log(data);
-	            },
-	            error : function(err) {
-	                console.log(err);
-	            }
-	        });
-	    },
-
-	    componentDidMount : function(){
-	        setInterval(this.loadAllThoughts, this.props.pollInterval);
-	    },
-
-
-	    render : function(){
-	        return (
-	            React.createElement("div", {id: "application"}, 
-	                React.createElement(HeaderFrame, null), 
-	                React.createElement(ModalFrame, {thoughtSubmit: this.thoughtSubmit})
-	            )
-	        );
-	    }
+	  render: function() {
+	    return (
+	      React.createElement("div", {id: "application"}, 
+	        React.createElement(HeaderFrame, null), 
+	        React.createElement(MainThoughtsFrame, null)
+	      )
+	    );
+	  }
 	});
 
 	// Inject the frame in the container.
 	ReactDOM.render(
-	    React.createElement(AppFrame, {pollInterval: "5000"}),
-	    document.getElementById('container')
+	  React.createElement(AppFrame, null),
+	  document.getElementById('container')
 	);
 
 
