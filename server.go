@@ -30,6 +30,7 @@ func main() {
 	r.HandleFunc("/api/thoughts", thoughtsPostHandler).Methods("POST")
 	r.HandleFunc("/api/thoughts", getAllThoughts).Methods("GET")
 	r.HandleFunc("/api/thoughts/{id}", thoughtsGetHandler).Methods("GET")
+	r.HandleFunc("/api/thoughts/{id}", editThoughtsHandler).Methods("PUT")
 
 	r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("public/"))))
 	http.ListenAndServe(":"+port, r)
@@ -48,6 +49,35 @@ func pingHandler(rw http.ResponseWriter, r *http.Request) {
 	rw.Write(resp)
 }
 
+func editThoughtsHandler(rw http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	idStr := vars["id"]
+
+	id, err := uuid.FromString(idStr)
+	if err != nil {
+		httpError(rw, http.StatusBadRequest, errors.New("unable to parse the identifier."))
+		return
+	}
+
+	var thought Thoughts
+	if _, ok := thoughtMap[ThoughtsID{id}]; !ok {
+		httpError(rw, http.StatusNotFound, errors.New("unable to locate resource."))
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	err = decoder.Decode(&thought)
+	if err != nil {
+		httpError(rw, http.StatusBadRequest, errors.New("unable to parse the resource"))
+		return
+	}
+
+	thoughtMap[ThoughtsID{id}] = thought
+	rw.Header().Set("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusNoContent)
+}
+
 func getAllThoughts(rw http.ResponseWriter, r *http.Request) {
 
 	thoughts := make([]Thoughts, 0)
@@ -58,6 +88,7 @@ func getAllThoughts(rw http.ResponseWriter, r *http.Request) {
 	resp, err := json.Marshal(thoughts)
 	if err != nil {
 		httpError(rw, http.StatusInternalServerError, err)
+		return
 	}
 
 	rw.Header().Set("Content-Type", "application/json")
