@@ -5,18 +5,16 @@ import (
 	"errors"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	"github.com/m4rw3r/uuid"
 )
 
-var thoughtMap map[ThoughtsID]Thoughts
+var tp ThoughtProcessor
 
 func init() {
 	logrus.Info("Intiliazing the data structures.")
-	thoughtMap = make(map[ThoughtsID]Thoughts)
 }
 
 func main() {
@@ -24,6 +22,21 @@ func main() {
 	if port == "" {
 		port = "9999"
 	}
+
+	db, err := GetPostgresConnection()
+	if err != nil {
+		panic(err)
+	}
+
+	tp = ThoughtProcessor{
+		ThoughtStorage: ThoughtStorage{db},
+	}
+
+	if err := tp.Init(); err != nil {
+		panic(err)
+	}
+
+	logrus.Info("Successfully initialized the processor.")
 
 	r := new(mux.Router)
 	r.HandleFunc("/api/ping", pingHandler)
@@ -54,18 +67,13 @@ func editThoughtsHandler(rw http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 
-	id, err := uuid.FromString(idStr)
+	_, err := uuid.FromString(idStr)
 	if err != nil {
 		httpError(rw, http.StatusBadRequest, errors.New("unable to parse the identifier."))
 		return
 	}
 
-	var thought Thoughts
-	if _, ok := thoughtMap[ThoughtsID{id}]; !ok {
-		httpError(rw, http.StatusNotFound, errors.New("unable to locate resource."))
-		return
-	}
-
+	var thought Thought
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&thought)
 	if err != nil {
@@ -73,16 +81,31 @@ func editThoughtsHandler(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	thoughtMap[ThoughtsID{id}] = thought
+	if err = tp.ThoughtStorage.UpdateThought(thought); err != nil {
+
+		if err == ErrNoRowUpdated {
+			httpError(rw,
+				http.StatusNotFound,
+				errors.New("No row updated."))
+		} else {
+			httpError(rw,
+				http.StatusInternalServerError,
+				errors.New("Internal server error."))
+		}
+
+		return
+	}
+
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusNoContent)
 }
 
 func getAllThoughts(rw http.ResponseWriter, r *http.Request) {
 
-	thoughts := make([]Thoughts, 0)
-	for key := range thoughtMap {
-		thoughts = append(thoughts, thoughtMap[key])
+	thoughts, err := tp.ThoughtStorage.GetAllThoughts()
+	if err != nil {
+		httpError(rw, http.StatusInternalServerError, err)
+		return
 	}
 
 	resp, err := json.Marshal(thoughts)
@@ -114,21 +137,13 @@ func thoughtsPostHandler(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, _ := uuid.V4()
-	thoughtsID := ThoughtsID{id}
-
-	// Create a new thoughts object.
-	thoughts := Thoughts{
-		ID:          thoughtsID,
-		CreatedTime: time.Now(),
-		Title:       thoughtsPost.Title,
-		Content:     thoughtsPost.Thought,
+	thought, err := tp.ThoughtStorage.AddThought(thoughtsPost)
+	if err != nil {
+		httpError(rw, http.StatusInternalServerError, err)
+		return
 	}
 
-	// Store the value in the thoughts map.
-	thoughtMap[thoughts.ID] = thoughts
-
-	resp, err := json.Marshal(thoughts)
+	resp, err := json.Marshal(*thought)
 	if err != nil {
 		httpError(rw, http.StatusInternalServerError, err)
 		return
@@ -157,20 +172,21 @@ func thoughtsGetHandler(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// If the entry is being located successfully.
-	if thought, ok := thoughtMap[ThoughtsID{id}]; ok {
-
-		resp, err := json.Marshal(thought)
-		if err != nil {
+	thought, err := tp.ThoughtStorage.GetThought(ThoughtsID{id})
+	if err != nil {
+		switch err {
+		case ErrNoRecordFound:
+			httpError(rw, http.StatusNotFound, err)
+		default:
 			httpError(rw, http.StatusInternalServerError, err)
-			return
 		}
-
-		rw.Header().Set("Content-Type", "application/json")
-		rw.WriteHeader(http.StatusOK)
-		rw.Write(resp)
 		return
 	}
 
-	httpError(rw, http.StatusNotFound, errors.New("Unable to locate the resource."))
+	resp, _ := json.Marshal(thought)
+
+	rw.Header().Set("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusOK)
+	rw.Write(resp)
+	return
 }
