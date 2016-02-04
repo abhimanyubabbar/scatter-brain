@@ -12,6 +12,11 @@ type ThoughtsPost struct {
 	Thought string `json:"thought"`
 }
 
+type LabelsPost struct {
+	Hexcode     string `json:"hex"`
+	Description string `json:"description"`
+}
+
 // Thought : Main structure of the system.
 type Thought struct {
 	ID         ThoughtsID `json:"id"`
@@ -19,6 +24,13 @@ type Thought struct {
 	Content    string     `json:"content"`
 	CreateTime time.Time  `json:"create_time"`
 	UpdateTime time.Time  `json:"update_time"`
+}
+
+// Label : A categorical overview associated with the thought.
+type Label struct {
+	Id          int    `json:"id"`  // Should be auto incremental.
+	Hexcode     string `json:"hex"` // Needs to have default.
+	Description string `json:"description"`
 }
 
 type ThoughtsID struct {

@@ -30,6 +30,7 @@ func main() {
 
 	tp = ThoughtProcessor{
 		ThoughtStorage: ThoughtStorage{db},
+		LabelStorage:   LabelStorage{db},
 	}
 
 	if err := tp.Init(); err != nil {
@@ -44,6 +45,8 @@ func main() {
 	r.HandleFunc("/api/thoughts", getAllThoughts).Methods("GET")
 	r.HandleFunc("/api/thoughts/{id}", thoughtsGetHandler).Methods("GET")
 	r.HandleFunc("/api/thoughts/{id}", editThoughtsHandler).Methods("PUT")
+
+	r.HandleFunc("/api/labels", labelsPostHandler).Methods("POST")
 
 	r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("public/"))))
 	http.ListenAndServe(":"+port, r)
@@ -60,6 +63,30 @@ func pingHandler(rw http.ResponseWriter, r *http.Request) {
 	response := Status{"pong", "scatter-brain"}
 	resp, _ := json.Marshal(response)
 	rw.Write(resp)
+}
+
+func labelsPostHandler(rw http.ResponseWriter, r *http.Request) {
+
+	var postData LabelsPost
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&postData)
+
+	if err != nil {
+		httpError(rw, http.StatusBadRequest, err)
+		return
+	}
+
+	label, err := tp.LabelStorage.AddLabel(postData)
+	if err != nil {
+		httpError(rw, http.StatusInternalServerError, err)
+		return
+	}
+
+	resp, _ := json.Marshal(*label)
+	rw.Header().Set("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusCreated)
+	rw.Write(resp)
+
 }
 
 func editThoughtsHandler(rw http.ResponseWriter, r *http.Request) {
