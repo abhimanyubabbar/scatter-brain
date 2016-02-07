@@ -29,8 +29,9 @@ func main() {
 	}
 
 	tp = ThoughtProcessor{
-		ThoughtStorage: ThoughtStorage{db},
-		LabelStorage:   LabelStorage{db},
+		ThoughtStorage:      ThoughtStorage{db},
+		LabelStorage:        LabelStorage{db},
+		ThoughtLabelStorage: ThoughtLabelStorage{db},
 	}
 
 	if err := tp.Init(); err != nil {
@@ -47,6 +48,7 @@ func main() {
 	r.HandleFunc("/api/thoughts/{id}", editThoughtsHandler).Methods("PUT")
 
 	r.HandleFunc("/api/labels", labelsPostHandler).Methods("POST")
+	r.HandleFunc("/api/thought-labels", labelOnThoughtHandler).Methods("POST")
 
 	r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("public/"))))
 	http.ListenAndServe(":"+port, r)
@@ -62,6 +64,28 @@ func pingHandler(rw http.ResponseWriter, r *http.Request) {
 
 	response := Status{"pong", "scatter-brain"}
 	resp, _ := json.Marshal(response)
+	rw.Write(resp)
+}
+
+func labelOnThoughtHandler(rw http.ResponseWriter, r *http.Request) {
+	var thoughtLabel ThoughtLabel
+	decoder := json.NewDecoder(r.Body)
+
+	err := decoder.Decode(&thoughtLabel)
+	if err != nil {
+		httpError(rw, http.StatusBadRequest, err)
+		return
+	}
+
+	err = tp.ThoughtLabelStorage.AddLabelToThought(thoughtLabel)
+	if err != nil {
+		httpError(rw, http.StatusInternalServerError, err)
+		return
+	}
+
+	resp, _ := json.Marshal(thoughtLabel)
+	rw.Header().Set("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusCreated)
 	rw.Write(resp)
 }
 

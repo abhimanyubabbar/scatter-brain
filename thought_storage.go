@@ -29,9 +29,9 @@ func (ts ThoughtStorage) Initialize() error {
 func (ts ThoughtStorage) GetDBSchemas() []string {
 
 	return []string{
-		`CREATE TABLE IF NOT EXISTS thoughts(
+		`CREATE TABLE IF NOT EXISTS thought(
 			id UUID PRIMARY KEY,
-			title TEXT,
+			title TEXT NOT NULL,
 			content TEXT,
 			create_time TIMESTAMP,
 			update_time TIMESTAMP
@@ -50,7 +50,7 @@ func (ts ThoughtStorage) AddThought(data ThoughtsPost) (*Thought, error) {
 		UpdateTime: now,
 	}
 
-	q := `INSERT INTO thoughts (id, title, content, create_time, update_time)
+	q := `INSERT INTO thought (id, title, content, create_time, update_time)
 	VALUES($1, $2, $3, $4, $5)`
 
 	_, err := ts.db.Exec(q, thought.ID, thought.Title, thought.Content,
@@ -66,7 +66,7 @@ func (ts ThoughtStorage) AddThought(data ThoughtsPost) (*Thought, error) {
 func (ts ThoughtStorage) UpdateThought(thought Thought) error {
 
 	thought.UpdateTime = time.Now()
-	q := `UPDATE thoughts SET title = $1, content= $2, update_time= $3
+	q := `UPDATE thought SET title = $1, content= $2, update_time= $3
 	where id = $4`
 
 	result, err := ts.db.Exec(q, thought.Title, thought.Content,
@@ -90,7 +90,7 @@ func (ts ThoughtStorage) GetThought(id ThoughtsID) (Thought, error) {
 	var title, content string
 	var create_time, update_time time.Time
 	q := `SELECT title, content, create_time, update_time
-	FROM thoughts WHERE id = $1`
+	FROM thought WHERE id = $1`
 
 	err := ts.db.QueryRow(q, id).Scan(&title, &content,
 		&create_time, &update_time)
@@ -112,7 +112,7 @@ func (ts ThoughtStorage) GetThought(id ThoughtsID) (Thought, error) {
 func (ts ThoughtStorage) GetAllThoughts() ([]Thought, error) {
 
 	var thoughts []Thought
-	q := `SELECT id, title, content, create_time, update_time FROM thoughts`
+	q := `SELECT id, title, content, create_time, update_time FROM thought`
 
 	rows, err := ts.db.Query(q)
 	if err != nil {
