@@ -9,7 +9,7 @@ import (
 // Structure during the post.
 type ThoughtsPost struct {
 	Title   string `json:"title"`
-	Thought string `json:"thought"`
+	Thought string `json:"content"`
 }
 
 type LabelsPost struct {
@@ -31,6 +31,11 @@ type Label struct {
 	Id          int    `json:"id"`  // Should be auto incremental.
 	Hexcode     string `json:"hex"` // Needs to have default.
 	Description string `json:"description"`
+}
+
+type ThoughtLabel struct {
+	Thought ThoughtsID `json:"thought_id"`
+	Label   int        `json:"label_id"`
 }
 
 type ThoughtsID struct {
