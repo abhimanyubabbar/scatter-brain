@@ -1,3 +1,6 @@
+var React = require('react');
+var ReactDOM = require('react-dom');
+
 // Heading Frame.
 var HeaderFrame = React.createClass({
   render: function() {

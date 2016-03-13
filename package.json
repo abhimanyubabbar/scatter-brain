@@ -4,18 +4,22 @@
   "description": "Easy Way to tag your thoughts.",
   "author": "Abhimanyu Babbar <babbar@kth.se>",
   "dependencies": {
-    "react": "^0.14.6",
+    "react": "^0.14.7",
+    "react-dom": "^0.14.7",
     "react-modal": "latest",
     "underscore": "latest"
   },
   "main": "index.js",
   "devDependencies": {
+    "http-server": "^0.9.0",
     "jsx-loader": "^0.13.2",
-    "webpack": "^1.12.12",
+    "webpack": "^1.12.14",
     "webpack-dev-server": "^1.14.1"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npm run serve | npm run dev",
+    "serve": "./node_modules/.bin/http-server -p 8080",
+    "dev": "webpack-dev-server --progress --colors --port 8090"
   },
   "repository": {
     "type": "git",
@@ -24,5 +28,6 @@
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/babbarshaer/scatter-brain/issues"
-  }
+  },
+  "homepage": "https://github.com/babbarshaer/scatter-brain"
 }
