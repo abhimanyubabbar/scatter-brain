@@ -10,6 +10,18 @@ Sometimes when we just want to note down information in terms of headings and so
 
 We start it small.
 
+Run
+-----
+
+#### Development
+* npm run dev - This command will start the webpack dev server which will put a watch on the jsx files.
+* Rest same process as in production.
+
+#### Production
+* go get -v 
+* go build
+* ./scatter-brain
+
 Endpoints
 ---------
 
