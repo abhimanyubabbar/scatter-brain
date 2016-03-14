@@ -4,11 +4,24 @@ body {
     font-size:1.8em
 }
 
-#header-frame .heading {
+.heading {
     font-family: 'Lobster',cursive;
     text-align: center
 }
 
 #form-frame {
     margin-top: 50px;
+}
+
+.gi-2x {
+    font-size: 2em;
+}
+.gi-3x {
+    font-size: 3em;
+}
+.gi-4x {
+    font-size: 4em;
+}
+.gi-5x {
+    font-size: 5em;
 }
