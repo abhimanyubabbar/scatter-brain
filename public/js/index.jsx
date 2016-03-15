@@ -1,8 +1,8 @@
-var React = require('react');
-var ReactDOM = require('react-dom');
-var Header = require('./header.jsx');
-var NewThought = require('./newThought.jsx');
-var Landing = require('./landing.jsx');
+import React from 'react';
+import ReactDOM from 'react-dom';
+import Header from './header.jsx';
+import NewThought from './newThought.jsx';
+import Landing from './landing.jsx';
 import {Router, Route, IndexRoute} from 'react-router';
 
 var App = React.createClass({
