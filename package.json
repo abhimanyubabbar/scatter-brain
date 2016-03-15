@@ -4,9 +4,15 @@
   "description": "Easy Way to tag your thoughts.",
   "author": "Abhimanyu Babbar <babbar@kth.se>",
   "dependencies": {
+    "babel-core": "^6.7.2",
+    "babel-loader": "^6.2.4",
+    "babel-preset-es2015": "^6.6.0",
+    "babel-preset-react": "^6.5.0",
+    "babel-preset-stage-0": "^6.5.0",
     "react": "^0.14.7",
     "react-dom": "^0.14.7",
     "react-modal": "latest",
+    "react-router": "^2.0.1",
     "underscore": "latest"
   },
   "main": "index.js",

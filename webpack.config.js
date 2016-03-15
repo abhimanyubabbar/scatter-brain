@@ -9,10 +9,15 @@ module.exports = {
     module: {
             loaders: [
                         {
-                                        //tell webpack to use jsx-loader for all *.jsx files
-                                        test: /\.jsx$/,
-                                        loader: 'jsx-loader?insertPragma=React.DOM&harmony'
-                                    }
+                            test: /\.jsx$/,
+                            exclude: /node_modules/,
+                            loader: "babel",
+                            query:
+                              {
+                                      presets:['stage-0','es2015','react']
+                              }
+                        }
+
                     ]
         },
     externals: {
