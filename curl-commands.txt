@@ -1,0 +1,8 @@
+ curl -XPOST -d '{"title":"sometitle", "content":"Some thought"}' localhost:9999/api/thoughts
+ curl -XPOST -d '{"hex":"#ffff", "description":"thought description"}' localhost:9999/api/labels
+ curl -XPOST -d '{"thought_id":"d4f4e1b8-1910-4a7a-a99b-44c6e93b9847", "label_id":1}' localhost:9999/api/thought-labels
+
+
+ {"id":"d4f4e1b8-1910-4a7a-a99b-44c6e93b9847","title":"sometitle","content":"Some thought","create_time":"2016-02-07T23:27:57.976303344+01:00","update_time":"2016-02-07T23:27:57.976303344+01:00"}
+
+{"id":1,"hex":"#ffff","description":"thought description"}

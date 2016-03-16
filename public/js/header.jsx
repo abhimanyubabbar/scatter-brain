@@ -1,4 +1,5 @@
 var React = require('react');
+import {Link} from 'react-router';
 
 var HeaderFrame  = React.createClass({
 
@@ -12,14 +13,18 @@ var HeaderFrame  = React.createClass({
               <a className="navbar-brand heading" href="#">Scatter Brain</a>
             </div>
 
-            <div className="nav navbar-nav">
-              <li className="active"><a href="#"><span className="glyphicon glyphicon-cloud gi-2x"></span></a></li>
-            </div>
+            <ul className="nav navbar-nav">
+              <li><Link to="/newThought"><span className="glyphicon glyphicon-cloud gi-2x"></span></Link></li>
+            </ul>
+
+            <ul className="nav navbar-nav navbar-right">
+              <li><Link to="/labels"><span className="glyphicon glyphicon-tags gi-2x"></span></Link></li>
+            </ul>
           </div>
 
         </nav>
       </div>
-    )
+    );
   }
 });
 

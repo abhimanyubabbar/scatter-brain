@@ -1,15 +1,18 @@
-var React = require('react');
-var ReactDOM = require('react-dom');
-var Header = require('./header.jsx');
-var MainThoughtsFrame = require('./thoughts.jsx');
+import React from 'react';
+import ReactDOM from 'react-dom';
+import Header from './header.jsx';
+import NewThought from './newThought.jsx';
+import Landing from './landing.jsx';
+import Labels from './label.jsx';
+import {Router, Route, IndexRoute} from 'react-router';
 
-var AppFrame = React.createClass({
+var App = React.createClass({
 
   render: function() {
     return (
       <div id="application">
         <Header/>
-        <MainThoughtsFrame/>
+        {this.props.children}
       </div>
     );
   }
@@ -17,6 +20,12 @@ var AppFrame = React.createClass({
 
 // Inject the frame in the container.
 ReactDOM.render(
-  <AppFrame/>,
+  <Router>
+    <Route path="/" component={App}>
+      <IndexRoute component={Landing}/>
+      <Route path="newThought" component={NewThought}/>
+      <Route path="labels" component={Labels}/>
+    </Route>
+  </Router>,
   document.getElementById('main')
 );
