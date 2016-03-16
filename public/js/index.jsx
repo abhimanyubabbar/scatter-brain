@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import Header from './header.jsx';
 import NewThought from './newThought.jsx';
 import Landing from './landing.jsx';
+import Labels from './label.jsx';
 import {Router, Route, IndexRoute} from 'react-router';
 
 var App = React.createClass({
@@ -23,6 +24,7 @@ ReactDOM.render(
     <Route path="/" component={App}>
       <IndexRoute component={Landing}/>
       <Route path="newThought" component={NewThought}/>
+      <Route path="labels" component={Labels}/>
     </Route>
   </Router>,
   document.getElementById('main')

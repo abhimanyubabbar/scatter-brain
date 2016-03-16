@@ -13,6 +13,18 @@ body {
     margin-top: 50px;
 }
 
+.margin-top-sm {
+    margin-top: 20px;
+}
+
+.margin-top-lg {
+    margin-top: 50px;
+}
+
+.base-margin {
+    margin: 0 5 0 5;
+}
+
 .gi-2x {
     font-size: 2em;
 }
