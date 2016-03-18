@@ -63,6 +63,45 @@ func (ts ThoughtStorage) AddThought(data ThoughtsPost) (*Thought, error) {
 	return &thought, nil
 }
 
+func (ts ThoughtStorage) AddThoughtWithLabel(data ThoughtWithLabelPost) error {
+
+	now := time.Now()
+	thought := Thought{
+		ID:         GenThoughtID(),
+		Title:      data.Title,
+		Content:    data.Thought,
+		CreateTime: now,
+		UpdateTime: now,
+	}
+	// Begin a transaction
+	tx, err := ts.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	// Add thought in the system.
+	q := `INSERT INTO thought (id, title, content, create_time, update_time)
+	VALUES($1, $2, $3, $4, $5)`
+
+	if _, err = tx.Exec(q, thought.ID, thought.Title, thought.Content,
+		thought.CreateTime, thought.UpdateTime); err != nil {
+
+		tx.Rollback()
+		return err
+	}
+
+	// Store the thought with label in the system.
+	q = `INSERT INTO thought_with_labels (thought_id, label_id) VALUES ($1, $2)`
+	if _, err := tx.Exec(q, thought.ID, data.Label); err != nil {
+
+		tx.Rollback()
+		return err
+	}
+
+	// If everything goes good, commit.
+	return tx.Commit()
+}
+
 func (ts ThoughtStorage) UpdateThought(thought Thought) error {
 
 	thought.UpdateTime = time.Now()

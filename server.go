@@ -44,13 +44,15 @@ func main() {
 	r := new(mux.Router)
 	r.HandleFunc("/api/ping", pingHandler)
 	r.HandleFunc("/api/thoughts", thoughtsPostHandler).Methods("POST")
+
 	r.HandleFunc("/api/thoughts", getAllThoughts).Methods("GET")
 	r.HandleFunc("/api/thoughts/{id}", thoughtsGetHandler).Methods("GET")
 	r.HandleFunc("/api/thoughts/{id}", editThoughtsHandler).Methods("PUT")
 
 	r.HandleFunc("/api/labels", labelsPOSTHandler).Methods("POST")
 	r.HandleFunc("/api/labels", labelsGETHandler).Methods("GET")
-	r.HandleFunc("/api/thought-labels", labelOnThoughtHandler).Methods("POST")
+	r.HandleFunc("/api/thought-labels", labelOnThoughtHandler).Methods("PUT")
+	r.HandleFunc("/api/thought-labels", thoughtWithLabelsPOSTHandler).Methods("POST")
 
 	r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("public/"))))
 	http.ListenAndServe(":"+port, r)
@@ -67,6 +69,32 @@ func pingHandler(rw http.ResponseWriter, r *http.Request) {
 	response := Status{"pong", "scatter-brain"}
 	resp, _ := json.Marshal(response)
 	rw.Write(resp)
+}
+
+func thoughtWithLabelsPOSTHandler(rw http.ResponseWriter, r *http.Request) {
+
+	var thoughtWithLabel ThoughtWithLabelPost
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&thoughtWithLabel)
+
+	if err != nil {
+		http.Error(rw, fmt.Sprintf("Unable to decode: %s",
+			err.Error()), http.StatusBadRequest)
+		return
+	}
+
+	err = tp.ThoughtStorage.AddThoughtWithLabel(thoughtWithLabel)
+
+	if err != nil {
+		http.Error(rw, fmt.Sprintf("Unable to create thought: %s",
+			err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	rw.Header().Set("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusCreated)
+	rw.Write([]byte(`thought created`))
 }
 
 func labelOnThoughtHandler(rw http.ResponseWriter, r *http.Request) {
