@@ -7,7 +7,7 @@ var Labels = React.createClass({
   getInitialState : function(){
     return {
       hex : "",
-      label: "",
+      description: "",
       labels: []
     };
   },
@@ -47,17 +47,21 @@ var Labels = React.createClass({
       success: function(data) {
         console.log("New label added in system.");
         console.log(data);
-      },
+        this.setState({
+          hex : '',
+          description: ''
+        });
+      }.bind(this),
       error: function(err) {
         console.log("Unable to add new label in system.");
         console.log(err);
-      }
+      }.bind(this)
     });
   },
 
-  labelChange: function(e) {
+  descriptionChange: function(e) {
     this.setState({
-      label: e.target.value
+      description: e.target.value
     });
   },
 
@@ -67,11 +71,24 @@ var Labels = React.createClass({
     });
   },
 
+  submitLabel : function(e){
+    e.preventDefault();
+    var description = this.state.description.trim();
+    var hex = this.state.hex.trim();
+    if (!description || !hex) {
+      console.log('Missing mandatory parameters.');
+      return;
+    }
+    this.addNewLabel({
+      'hex': hex,
+      'description' : description
+    });
+  },
+
   render : function(){
     // Prepare the label table rows.
     var labelArray = [];
     var labels = this.state.labels;
-    console.log(labels);
     for (var i=0; i < labels.length; i++) {
       labelArray.push(
         <tr>
@@ -86,21 +103,23 @@ var Labels = React.createClass({
       <div id="labels">
         <CompactPicker onChangeComplete={this.handleColorChange}></CompactPicker>
         <div className="margin-top-sm">
-          <form role="form" id="label-form" className="form-inline">
+          <form role="form" id="label-form" className="form-inline"
+            onSubmit={this.submitLabel}>
 
             <div className="form-group">
               <label htmlFor="hex" className="base-margin">Code</label>
-              <input type="text" className="form-control base-margin" id="hex" disabled
-                    value={this.state.hex}></input>
+              <input type="text" className="form-control base-margin" id="hex"
+                disabled value={this.state.hex}></input>
             </div>
 
             <div className="form-group">
               <label htmlFor="label" className="base-margin">Label</label>
               <input type="text" className="form-control base-margin" id="label"
-                    value={this.state.label} onChange={this.labelChange}></input>
+                value={this.state.description}
+                onChange={this.descriptionChange}></input>
             </div>
 
-            <button className="btn btn-warning base-margin">Submit</button>
+            <button type="submit" className="btn btn-warning base-margin">Submit</button>
           </form>
         </div>
         <div>
