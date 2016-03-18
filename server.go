@@ -3,10 +3,11 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 
-	"github.com/Sirupsen/logrus"
+	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	"github.com/m4rw3r/uuid"
 )
@@ -14,7 +15,7 @@ import (
 var tp ThoughtProcessor
 
 func init() {
-	logrus.Info("Intiliazing the data structures.")
+	log.Info("Intiliazing the data structures.")
 }
 
 func main() {
@@ -38,7 +39,7 @@ func main() {
 		panic(err)
 	}
 
-	logrus.Info("Successfully initialized the processor.")
+	log.Info("Successfully initialized the processor.")
 
 	r := new(mux.Router)
 	r.HandleFunc("/api/ping", pingHandler)
@@ -47,7 +48,8 @@ func main() {
 	r.HandleFunc("/api/thoughts/{id}", thoughtsGetHandler).Methods("GET")
 	r.HandleFunc("/api/thoughts/{id}", editThoughtsHandler).Methods("PUT")
 
-	r.HandleFunc("/api/labels", labelsPostHandler).Methods("POST")
+	r.HandleFunc("/api/labels", labelsPOSTHandler).Methods("POST")
+	r.HandleFunc("/api/labels", labelsGETHandler).Methods("GET")
 	r.HandleFunc("/api/thought-labels", labelOnThoughtHandler).Methods("POST")
 
 	r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("public/"))))
@@ -89,7 +91,28 @@ func labelOnThoughtHandler(rw http.ResponseWriter, r *http.Request) {
 	rw.Write(resp)
 }
 
-func labelsPostHandler(rw http.ResponseWriter, r *http.Request) {
+func labelsGETHandler(rw http.ResponseWriter, r *http.Request) {
+
+	labels, err := tp.LabelStorage.GetAllLabels()
+
+	if err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Error("Unable to fetch all labels.")
+
+		http.Error(rw, errors.New(fmt.Sprintf("Unable to fetch labels: %s",
+			err.Error())).Error(), http.StatusInternalServerError)
+		return
+	}
+
+	resp, _ := json.Marshal(labels)
+	rw.Header().Set("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusOK)
+	rw.Write(resp)
+
+}
+
+func labelsPOSTHandler(rw http.ResponseWriter, r *http.Request) {
 
 	var postData LabelsPost
 	decoder := json.NewDecoder(r.Body)
@@ -173,14 +196,14 @@ func getAllThoughts(rw http.ResponseWriter, r *http.Request) {
 // Handles the addition of a new user thought in the system.
 func thoughtsPostHandler(rw http.ResponseWriter, r *http.Request) {
 
-	logrus.Info("Adding a new thought to the system.")
+	log.Info("Adding a new thought to the system.")
 	decoder := json.NewDecoder(r.Body)
 
 	thoughtsPost := ThoughtsPost{}
 	err := decoder.Decode(&thoughtsPost)
 
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
+		log.WithFields(log.Fields{
 			"error": err,
 		}).Error("Json decoding failed.")
 
@@ -208,14 +231,14 @@ func thoughtsPostHandler(rw http.ResponseWriter, r *http.Request) {
 // Handles the fetch of a particular thought from the map for now.
 func thoughtsGetHandler(rw http.ResponseWriter, r *http.Request) {
 
-	logrus.Info("Received a call to fetch the thoughts")
+	log.Info("Received a call to fetch the thoughts")
 
 	vars := mux.Vars(r)
 	idString := vars["id"]
 	id, err := uuid.FromString(idString)
 
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
+		log.WithFields(log.Fields{
 			"error": err,
 		}).Error("Invalid url param.")
 
