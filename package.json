@@ -14,6 +14,7 @@
     "react-dom": "^0.14.7",
     "react-modal": "latest",
     "react-router": "^2.0.1",
+    "react-select": "^0.9.1",
     "underscore": "latest"
   },
   "main": "index.js",
