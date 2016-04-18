@@ -22,11 +22,18 @@ func (ls LabelStorage) Initialize() error {
 func (ls LabelStorage) GetDBSchemas() []string {
 
 	schemas := []string{
-		`CREATE TABLE IF NOT EXISTS label (
+		`
+		CREATE TABLE IF NOT EXISTS label (
 			id SERIAL PRIMARY KEY,
 			description TEXT,
 			hexcode TEXT
-		)`,
+		);`,
+		`
+		INSERT INTO label (id, description, hexcode)
+		SELECT 0, 'Default', 'None'
+		WHERE NOT EXISTS (
+			SELECT id FROM label where id=0
+		);`,
 	}
 
 	return schemas
@@ -50,4 +57,38 @@ func (ls LabelStorage) AddLabel(post LabelsPost) (*Label, error) {
 	}
 
 	return &label, nil
+}
+
+// GetAllLabels : Fetch all the labels from the database.
+func (ls LabelStorage) GetAllLabels() (labels []Label, err error) {
+
+	q := `SELECT id, description, hexcode FROM label`
+	rows, err := ls.db.Query(q)
+
+	if err != nil {
+		return
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+
+		var id int
+		var description, hexcode string
+
+		if err := rows.Scan(&id, &description, &hexcode); err != nil {
+			return nil, err
+		}
+
+		label := Label{
+			Id:          id,
+			Hexcode:     hexcode,
+			Description: description,
+		}
+
+		labels = append(labels, label)
+	}
+
+	// Provide with all the labels.
+	return
 }

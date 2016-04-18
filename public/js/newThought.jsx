@@ -5,8 +5,30 @@ var NewThought = React.createClass({
   getInitialState: function(){
     return {
       title: '',
-      thought: ''
+      thought: '',
+      labels: [],
+      labelId: ''
     };
+  },
+
+  componentDidMount: function(){
+    $.ajax({
+      url: 'api/labels',
+      dataType: 'json',
+      success: function(data) {
+        console.log(data);
+        var labels = [];
+        for (var i=0; i < data.length; i ++) {
+          labels.push(data[i]);
+        }
+        this.setState({
+          labels:labels
+        });
+      }.bind(this),
+      error: function(err) {
+        console.log('Unable to fetch the labels' + err);
+      }.bind(this)
+    });
   },
 
   submitForm : function(e){
@@ -48,7 +70,7 @@ var NewThought = React.createClass({
     console.log(content);
 
     $.ajax({
-      url: '/api/thoughts',
+      url: '/api/thought-labels',
       type: 'POST',
       contentType: 'application/json',
       data: JSON.stringify(content),
@@ -64,9 +86,27 @@ var NewThought = React.createClass({
     });
   },
 
+  onLabelChange : function(val) {
+    console.log(val);
+    console.log(val.target.value);
+  },
+
   render : function() {
+
+    var labelSelect = [];
+    var labels = this.state.labels;
+    for(var i=0; i < labels.length; i ++) {
+      labelSelect.push(
+        <option value={labels[i]['id']}>
+          {labels[i]['description']}
+        </option>
+      );
+    }
+
     return (
       <form role="thoughtForm">
+
+
         <div className="form-group">
           <label htmlFor="thought-title">Title</label>
           <input type="text" className="form-control"
@@ -79,6 +119,12 @@ var NewThought = React.createClass({
          <textarea className="form-control"
                    id="thought-description" value={this.state.thought}
                    onChange={this.thoughtChange}></textarea>
+        </div>
+
+        <div className="form-group">
+          <select onChange={this.onLabelChange}>
+            {labelSelect}
+          </select>
         </div>
 
         <button className="btn btn-success"

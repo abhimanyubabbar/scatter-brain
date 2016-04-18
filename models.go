@@ -12,6 +12,13 @@ type ThoughtsPost struct {
 	Thought string `json:"content"`
 }
 
+// Structure during the post.
+type ThoughtWithLabelPost struct {
+	Title   string `json:"title"`
+	Thought string `json:"content"`
+	Label   int    `json:"label_id"`
+}
+
 type LabelsPost struct {
 	Hexcode     string `json:"hex"`
 	Description string `json:"description"`
@@ -31,6 +38,12 @@ type Label struct {
 	Id          int    `json:"id"`  // Should be auto incremental.
 	Hexcode     string `json:"hex"` // Needs to have default.
 	Description string `json:"description"`
+}
+
+// ThoughtWithLabels : Thought attahceds with labels.
+type ThoughtWithLabels struct {
+	Thought Thought `json:"thought"`
+	Labels  Label   `json:"labels"`
 }
 
 type ThoughtLabel struct {
