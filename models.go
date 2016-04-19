@@ -9,13 +9,13 @@ import (
 // Structure during the post.
 type ThoughtsPost struct {
 	Title   string `json:"title"`
-	Thought string `json:"content"`
+	Thought string `json:"thought"`
 }
 
 // Structure during the post.
 type ThoughtWithLabelPost struct {
 	Title   string `json:"title"`
-	Thought string `json:"content"`
+	Thought string `json:"thought"`
 	Label   int    `json:"label_id"`
 }
 

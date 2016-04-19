@@ -68,7 +68,6 @@ var NewThought = React.createClass({
 
     console.log("Going to add a new thought");
     console.log(content);
-
     $.ajax({
       url: '/api/thought-labels',
       type: 'POST',

@@ -230,6 +230,8 @@ func thoughtsPostHandler(rw http.ResponseWriter, r *http.Request) {
 	thoughtsPost := ThoughtsPost{}
 	err := decoder.Decode(&thoughtsPost)
 
+	log.Info(thoughtsPost)
+
 	if err != nil {
 		log.WithFields(log.Fields{
 			"error": err,
